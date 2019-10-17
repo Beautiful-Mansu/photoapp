@@ -2,6 +2,7 @@ package com.photo_app.presenter;
 
 import android.content.Context;
 
+import com.photo_app.model.data.PhotoResponse;
 import com.photo_app.model.data.Size;
 import com.photo_app.model.network.PhotoRepository;
 
@@ -25,14 +26,36 @@ public class PhotoListPresenter {
     }
 
     public void start() {
-        PhotoRepository photoRepository = new PhotoRepository(getObserver());
+        PhotoRepository photoRepository = new PhotoRepository(this);
         mViewListener = (ViewContractListener) mContext;
         mViewListener.updateProgress(true);
         photoRepository.initPhotoRequest();
     }
 
+    public Observer<PhotoResponse> getPhotoResponseObserver() {
+        return new Observer<PhotoResponse>() {
+            @Override
+            public void onSubscribe(Disposable disposable) {
+                compositeDisposable.add(disposable);
+            }
 
-    private Observer<List<Size>> getObserver() {
+            @Override
+            public void onNext(PhotoResponse response) {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                mViewListener.updateUI(new ArrayList<Size>());
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
+    }
+
+
+    public Observer<List<Size>> getPhotoListObserver() {
         return new Observer<List<Size>>() {
             @Override
             public void onSubscribe(Disposable disposable) {

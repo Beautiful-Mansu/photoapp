@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,7 +42,13 @@ public class PhotoListActivity extends AppCompatActivity implements PhotoListPre
 
     @Override
     public void updateUI(List<Size> dataSet) {
-        mImageAdapter.updateData(dataSet);
+        if (!dataSet.isEmpty()) {
+            mImageAdapter.updateData(dataSet);
+        } else {
+            // display toast if the main api throws error or photos api .
+            updateProgress(false);
+            Toast.makeText(this, "Something Went Wrong ...! ", Toast.LENGTH_LONG).show();
+        }
     }
 
 

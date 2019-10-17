@@ -2,6 +2,7 @@ package com.photo_app.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,7 +66,7 @@ class ImageAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    private void fetchImage(@NonNull Context context, Size dataItem, final ImageView imageView) {
+    private void fetchImage(@NonNull final Context context, Size dataItem, final ImageView imageView) {
         if (!TextUtils.isEmpty(dataItem.getSource())) {
             Glide.with(context)
                     .asBitmap()
@@ -75,7 +76,8 @@ class ImageAdapter extends BaseAdapter {
                     .listener(new RequestListener<Bitmap>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                            setImage(imageView, null);
+                            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
+                            setImage(imageView, bitmap);
                             return false;
                         }
 
@@ -86,7 +88,8 @@ class ImageAdapter extends BaseAdapter {
                         }
                     }).submit();
         } else {
-            setImage(imageView, null);
+            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
+            setImage(imageView, bitmap);
         }
     }
 

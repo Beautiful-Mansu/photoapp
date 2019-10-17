@@ -1,78 +1,58 @@
 package com.photo_app.model.network;
 
-import android.annotation.SuppressLint;
-import android.os.AsyncTask;
 import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
 
 import com.photo_app.model.data.Photo;
 import com.photo_app.model.data.PhotoItem;
 import com.photo_app.model.data.PhotoResponse;
 import com.photo_app.model.data.Size;
-
-import org.jetbrains.annotations.NotNull;
+import com.photo_app.presenter.PhotoListPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class PhotoRepository {
 
 
     private static final String LABEL_THUMBNAIL = "Thumbnail";
-    private final Observer<List<Size>> mObserver;
+    private final PhotoListPresenter mPresenter;
 
-    public PhotoRepository(@NonNull Observer<List<Size>> observer) {
-        mObserver = observer;
+    public PhotoRepository(PhotoListPresenter presenter) {
+        mPresenter = presenter;
     }
 
     public void initPhotoRequest() {
-        new PhotoAsyncTask().execute();
-
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class PhotoAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        @SuppressLint("CheckResult")
-        @Override
-        protected Void doInBackground(Void... voids) {
-            fetchData();
-            return null;
-        }
-
+        fetchData();
     }
 
 
     private void fetchData() {
         Retrofit retrofit = PhotoServiceClient.getRetrofitInstance();
         PhotoService service = retrofit.create(PhotoService.class);
-        Call<PhotoResponse> photosListCall = service.getPhotosList();
+        Observable<PhotoResponse> servicePhotosList = service.getPhotosList();
 
-        photosListCall.enqueue(new Callback<PhotoResponse>() {
-            @Override
-            public void onResponse(@NotNull Call<PhotoResponse> call, @NotNull Response<PhotoResponse> response) {
-                if (response.body() != null && response.body().getPhotos() != null) {
-                    List<Photo> photoList = new ArrayList<>(response.body().getPhotos().getPhoto());
-                    makePhotoBatchRequest(photoList);
-                }
-            }
-
-            @Override
-            public void onFailure(@NotNull Call<PhotoResponse> call, @NotNull Throwable t) {
-
-            }
-        });
+        servicePhotosList.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<PhotoResponse>() {
+                    @Override
+                    public void accept(PhotoResponse response) throws Exception {
+                        if (response != null && response.getPhotos() != null) {
+                            List<Photo> photoList = response.getPhotos().getPhoto();
+                            makePhotoBatchRequest(photoList);
+                        } else {
+                            // if response is null & repose has empty list throw exception so that observer onError() will be called.
+                            throw new Exception();
+                        }
+                    }
+                })
+                .subscribe(mPresenter.getPhotoResponseObserver());
     }
 
 
@@ -93,7 +73,7 @@ public class PhotoRepository {
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mObserver);
+                .subscribe(mPresenter.getPhotoListObserver());
     }
 
     private List<Size> filterThumbnails(final Object[] objects) {
