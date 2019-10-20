@@ -17,12 +17,12 @@ public class PhotoListPresenter {
 
     private Context mContext;
     private ViewContractListener mViewListener;
-    private final CompositeDisposable compositeDisposable;
+    private final CompositeDisposable mCompositeDisposable;
 
 
     public PhotoListPresenter(Context context) {
         mContext = context;
-        compositeDisposable = new CompositeDisposable();
+        mCompositeDisposable = new CompositeDisposable();
     }
 
     public void start() {
@@ -36,7 +36,7 @@ public class PhotoListPresenter {
         return new Observer<PhotoResponse>() {
             @Override
             public void onSubscribe(Disposable disposable) {
-                compositeDisposable.add(disposable);
+                mCompositeDisposable.add(disposable);
             }
 
             @Override
@@ -59,14 +59,13 @@ public class PhotoListPresenter {
         return new Observer<List<Size>>() {
             @Override
             public void onSubscribe(Disposable disposable) {
-                compositeDisposable.add(disposable);
+                mCompositeDisposable.add(disposable);
             }
 
             @Override
             public void onNext(List<Size> dataSet) {
                 ArrayList<Size> finalDataSet = new ArrayList<>(dataSet);
                 mViewListener.updateUI(finalDataSet);
-                mViewListener.updateProgress(false);
             }
 
 
@@ -85,7 +84,7 @@ public class PhotoListPresenter {
     public void stop() {
         mContext = null;
         mViewListener = null;
-        compositeDisposable.clear();
+        mCompositeDisposable.clear();
     }
 
     public interface ViewContractListener {

@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -18,17 +20,21 @@ import java.util.List;
 public class PhotoListActivity extends AppCompatActivity implements PhotoListPresenter.ViewContractListener {
 
     private ImageAdapter mImageAdapter;
-    private FrameLayout mProgressBar;
+    private FrameLayout mContainer;
+    private ProgressBar mProgressBar;
+    private ImageView mErrorImageView;
     private PhotoListPresenter presenter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_list);
-        GridView mGridView = findViewById(R.id.gridView);
-        mProgressBar = findViewById(R.id.progress_circular);
+        mProgressBar = findViewById(R.id.xProgressBar);
+        mContainer = findViewById(R.id.xContainer);
+        mErrorImageView = findViewById(R.id.xErrorImage);
+        GridView gridView = findViewById(R.id.gridView);
         mImageAdapter = new ImageAdapter();
-        mGridView.setAdapter(mImageAdapter);
+        gridView.setAdapter(mImageAdapter);
         presenter = new PhotoListPresenter(this);
         presenter.start();
     }
@@ -37,18 +43,28 @@ public class PhotoListActivity extends AppCompatActivity implements PhotoListPre
     @Override
     public void updateProgress(boolean shouldDisplay) {
         int visibility = shouldDisplay ? View.VISIBLE : View.GONE;
+        mContainer.setVisibility(visibility);
         mProgressBar.setVisibility(visibility);
     }
 
     @Override
     public void updateUI(List<Size> dataSet) {
+        updateProgress(false);
         if (!dataSet.isEmpty()) {
             mImageAdapter.updateData(dataSet);
         } else {
-            // display toast if the main api throws error or photos api .
-            updateProgress(false);
-            Toast.makeText(this, "Something Went Wrong ...! ", Toast.LENGTH_LONG).show();
+            // display toast if the main or photos api throws error.
+            setErrorImage();
         }
+    }
+
+    /**
+     * display error image if main or photos api throws error.
+     */
+    private void setErrorImage() {
+        mContainer.setVisibility(View.VISIBLE);
+        mErrorImageView.setVisibility(View.VISIBLE);
+        Toast.makeText(this, R.string.error_message , Toast.LENGTH_LONG).show();
     }
 
 

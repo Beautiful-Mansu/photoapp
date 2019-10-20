@@ -15,17 +15,27 @@
 
 
     <FrameLayout
-        android:id="@+id/progress_circular"
+        android:id="@+id/xContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:visibility="gone">
 
         <ProgressBar
+            android:id="@+id/xProgressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
+        <ImageView
+            android:id="@+id/xErrorImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:contentDescription="@string/no_cover"
+            android:src="@drawable/error_image"
+            android:visibility="gone" />
     </FrameLayout>
 
 </RelativeLayout>
